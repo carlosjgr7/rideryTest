@@ -9,6 +9,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.fragment.NavHostFragment
 import com.carlosjgr7.riderytest.databinding.ActivityMainBinding
+import com.carlosjgr7.riderytest.login.presentation.ui.LoginFragment
+import com.carlosjgr7.riderytest.main.presentation.ui.MainFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -28,12 +30,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        val drawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)
-
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
             finishAffinity()
-        }
     }
 }
