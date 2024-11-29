@@ -42,6 +42,7 @@ class MainFragment : Fragment(), OnMapReadyCallback {
     private val binding get() = _binding!!
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     private lateinit var map: GoogleMap
+    private var userLocation = LatLng(0.0, 0.0)
     private var job: Job? = null
     private var jobLocation: Job? = null
 
@@ -59,7 +60,6 @@ class MainFragment : Fragment(), OnMapReadyCallback {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
         binding.fabRight.setOnClickListener {
-            map.clear()
             showUserLocation()
         }
 
@@ -134,6 +134,14 @@ class MainFragment : Fragment(), OnMapReadyCallback {
                     }
 
                     is Resources.Success -> {
+                        map.clear()
+                        map.addMarker(MarkerOptions().position(userLocation).title("Tu Ubicación"))
+                        map.moveCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                userLocation,
+                                13f
+                            )
+                        )
                         val venues = result.data
                         for (venue in venues) {
                             val latLng = LatLng(venue.lat, venue.lng)
@@ -179,21 +187,16 @@ class MainFragment : Fragment(), OnMapReadyCallback {
                 LocationServices.getFusedLocationProviderClient(requireActivity())
             fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                 location?.let {
-                    val userLocation = LatLng(it.latitude, it.longitude)
-                    map.addMarker(MarkerOptions().position(userLocation).title("Tu Ubicación"))
-                    map.moveCamera(
-                        CameraUpdateFactory.newLatLngZoom(
-                            userLocation,
-                            13f
-                        )
-                    )
+                    userLocation = LatLng(it.latitude, it.longitude)
+
+                    viewModel.getVenues("${userLocation.latitude},${userLocation.longitude}")
                     Toast.makeText(
                         context,
                         "iniciando busqueda automatica de supermercados a un radio de 2km",
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    viewModel.getVenues("${it.latitude},${it.longitude}")
+
                 } ?: run {
                     Toast.makeText(
                         requireContext(),
@@ -202,6 +205,7 @@ class MainFragment : Fragment(), OnMapReadyCallback {
                     ).show()
                 }
             }
+
         } catch (e: SecurityException) {
             Toast.makeText(
                 requireContext(),
