@@ -5,6 +5,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.gradle)
     alias(libs.plugins.goole.services)
+    alias(libs.plugins.jetbrainsKotlinSerialization)
+    alias(libs.plugins.kotlin.parcelize)
+
     kotlin("kapt")
 
 }
@@ -64,7 +67,8 @@ dependencies {
     implementation(libs.fragment.ktx)
     implementation(libs.play.services.auth)
     implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.gson)
+    implementation(libs.retrofit.kotlinx.serialization.converter)
+    implementation(libs.androidx.json)
     implementation(libs.okhttp)
     implementation(libs.data.store)
     implementation(libs.play.services.maps)

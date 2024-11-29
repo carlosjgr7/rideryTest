@@ -4,17 +4,18 @@ import android.content.Context
 import com.chuckerteam.chucker.api.ChuckerCollector
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.chuckerteam.chucker.api.RetentionManager
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Named
 
 
@@ -23,6 +24,22 @@ import javax.inject.Named
 class NetworkModule {
 
 
+    @Provides
+    @Named("addHeadersInterceptor")
+    fun provideAddHeadersInterceptor(): Interceptor {
+        return Interceptor { chain ->
+            val newRequest =
+                chain.request()
+                    .newBuilder()
+                    .apply {
+                        runBlocking {
+                            addHeader("accept", "application/json")
+                        }
+                    }.build()
+
+            chain.proceed(newRequest)
+        }
+    }
 
     @Provides
     @Named("chuckerLoggingInterceptor")
@@ -43,31 +60,31 @@ class NetworkModule {
     }
 
 
-
     @Provides
     fun provideAuthHttpClient(
+        @Named("addHeadersInterceptor") addHeadersInterceptor: Interceptor,
         @Named("chuckerLoggingInterceptor") chuckerInterceptor: Interceptor,
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(chuckerInterceptor)
+            .addInterceptor(addHeadersInterceptor)
             .build()
     }
 
 
     @Provides
-    fun provideGson(): Gson {
-        return GsonBuilder()
-            .create()
+    fun provideJson(): Json {
+        return Json { ignoreUnknownKeys = true }
     }
 
     @Provides
     fun provideRetrofit(
-        gson: Gson,
+        json: Json,
         okHttpClient: OkHttpClient
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("mi url")
-            .addConverterFactory(GsonConverterFactory.create(gson))
+            .baseUrl("https://api.foursquare.com/")
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .client(okHttpClient)
             .build()
     }

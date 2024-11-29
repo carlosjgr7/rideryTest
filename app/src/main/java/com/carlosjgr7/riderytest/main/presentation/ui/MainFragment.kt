@@ -17,6 +17,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.carlosjgr7.riderytest.R
+import com.carlosjgr7.riderytest.core.Resources
 import com.carlosjgr7.riderytest.databinding.FragmentMainBinding
 import com.carlosjgr7.riderytest.main.presentation.viewmodels.MainViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -42,6 +43,7 @@ class MainFragment : Fragment(), OnMapReadyCallback {
     private lateinit var mGoogleSignInClient: GoogleSignInClient
     private lateinit var map: GoogleMap
     private var job: Job? = null
+    private var jobLocation: Job? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -56,6 +58,10 @@ class MainFragment : Fragment(), OnMapReadyCallback {
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+        binding.fabRight.setOnClickListener {
+            map.clear()
+            showUserLocation()
+        }
 
         return binding.root
     }
@@ -119,6 +125,31 @@ class MainFragment : Fragment(), OnMapReadyCallback {
 
             }
         }
+
+        jobLocation = lifecycleScope.launch {
+            viewModel.venues.collect { result ->
+                when (result) {
+                    is Resources.Loading -> {
+
+                    }
+
+                    is Resources.Success -> {
+                        val venues = result.data
+                        for (venue in venues) {
+                            val latLng = LatLng(venue.lat, venue.lng)
+                            val markerOptions = MarkerOptions()
+                                .position(latLng)
+                                .title(venue.name)
+                            map.addMarker(markerOptions)
+                        }
+                    }
+
+                    is Resources.Failure -> {
+
+                    }
+                }
+            }
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -153,9 +184,16 @@ class MainFragment : Fragment(), OnMapReadyCallback {
                     map.moveCamera(
                         CameraUpdateFactory.newLatLngZoom(
                             userLocation,
-                            15f
+                            13f
                         )
-                    ) // Zoom atractivo
+                    )
+                    Toast.makeText(
+                        context,
+                        "iniciando busqueda automatica de supermercados a un radio de 2km",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    viewModel.getVenues("${it.latitude},${it.longitude}")
                 } ?: run {
                     Toast.makeText(
                         requireContext(),
@@ -195,6 +233,7 @@ class MainFragment : Fragment(), OnMapReadyCallback {
     override fun onDestroyView() {
         super.onDestroyView()
         job?.cancel()
+        jobLocation?.cancel()
         _binding = null
     }
 
