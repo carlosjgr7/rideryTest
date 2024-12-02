@@ -28,7 +28,7 @@ android {
 
     signingConfigs {
         getByName("debug") {
-            storeFile = file("ruta/a/tu/debug.keystore")
+            storeFile = file("./debug.keystore")
             storePassword = "password"
             keyAlias = "androiddebugkey"
             keyPassword = "password"
