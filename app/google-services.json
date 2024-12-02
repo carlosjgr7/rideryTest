@@ -14,14 +14,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "132431258544-g7nkq24jtjt17tabt6ptndg96ncqo4f4.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.carlosjgr7.riderytest",
-            "certificate_hash": "19c74c48a787ba8c3ca5b8fe9926bd18638ef3e1"
-          }
-        },
-        {
           "client_id": "132431258544-g7rp2kgvvs030m3fpdfl7ci9nqpkle3l.apps.googleusercontent.com",
           "client_type": 3
         }
